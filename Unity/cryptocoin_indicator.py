@@ -95,6 +95,9 @@ class LiteBitExchange(Exchange):
             if currency == 'USD':
                 json_eur = requests.get('http://api.fixer.io/latest').json()
                 return round(Decimal(float(price) * json_eur["rates"]["USD"]), cryptocoin.round_number)
+            elif currency == 'GBP':
+                json_eur = requests.get('http://api.fixer.io/latest').json()
+                return round(Decimal(float(price) * json_eur["rates"]["GBP"]), cryptocoin.round_number)
 
             # Return eur price
             elif currency == 'EUR':
@@ -134,6 +137,7 @@ class CoinmarketcapExchange(Exchange):
                 return round(Decimal(json_obj[0]['price_usd']), cryptocoin.round_number)
             elif currency == 'EUR':
                 return round(Decimal(json_obj[0]['price_eur']), cryptocoin.round_number)
+
         else:
             return 'CC not supported'
 
@@ -221,6 +225,8 @@ class ExchangeApp(object):
             indicator.set_label('€ ' + str(cc_price), "100%")
         elif self.currency == "USD":
             indicator.set_label('$ ' + str(cc_price), "100%")
+        elif self.currency == "GBP":
+            indicator.set_label('£ ' + str(cc_price), "100%")
         else:
             indicator.set_label('DOGE', "100%")
 
@@ -255,7 +261,7 @@ class Gui(object):
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
         # Setup the refresh every 5 minutes
-        gobject.timeout_add(1000*60*5, self.exchange_app.update_price, "timeout")
+        gobject.timeout_add(1000 * 60 * 5, self.exchange_app.update_price, "timeout")
 
         # First price update within 1 second
         gobject.timeout_add(1000, self.exchange_app.first_update_price, "first_update")
@@ -309,13 +315,16 @@ class Gui(object):
         ######## CURRENCY ########
         item_radio_eur = gtk.RadioMenuItem('EUR (€)')
         item_radio_usd = gtk.RadioMenuItem('USD ($)')
+        item_radio_gbp = gtk.RadioMenuItem('GBP (£)')
         item_radio_usd.set_property('group', item_radio_eur)
+        item_radio_gbp.set_property('group', item_radio_eur)
 
         # Set active radio buttons
         item_radio_eur.set_active(True)
 
         item_radio_eur.connect("activate", self.exchange_app.set_currency, 'EUR')
         item_radio_usd.connect("activate", self.exchange_app.set_currency, 'USD')
+        item_radio_gbp.connect("activate", self.exchange_app.set_currency, 'GBP')
 
         ######## ABOUT ##############
         item_about = gtk.MenuItem('About')
@@ -344,6 +353,7 @@ class Gui(object):
         menu.append(gtk.SeparatorMenuItem())
         menu.append(item_radio_eur)
         menu.append(item_radio_usd)
+        menu.append(item_radio_gbp)
 
         menu.append(gtk.SeparatorMenuItem())
         menu.append(item_about)
